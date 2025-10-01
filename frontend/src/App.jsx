@@ -10,7 +10,7 @@ import VidComp from './call'
 function App() {
   const [count, setCount] = useState(0)
   const [message, setMessage] = useState("")
-  const [room, setRoom] = useState("")
+  const [room, setRoom] = useState("hsi")
   const [currRoom, setCurrRoom] = useState("")
   const socket = useWsStore(state => state.socket);
   const [chatHistory , setCh] = useState([]);

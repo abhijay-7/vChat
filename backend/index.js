@@ -202,6 +202,7 @@ io.on("connection", (socket) => {
     // Cleanup on disconnect
     socket.on("disconnect", () => {
         for (const [roomId, peers] of Object.entries(rooms)) {
+             socket.to(roomId).emit("call-ended-by-peer", {from: socket.id});
             rooms[roomId] = peers.filter((p) => p !== socket.id);
             if (rooms[roomId].length === 0) {
                 delete rooms[roomId];
