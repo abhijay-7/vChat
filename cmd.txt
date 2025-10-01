@@ -4,3 +4,6 @@ sudo kill -9 $(lsof -t -i :3000)
 
 
 generating certificates
+
+
+ngrok http 3000 --request-header-add='ngrok-skip-browser-warning:true'

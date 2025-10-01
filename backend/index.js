@@ -138,63 +138,74 @@ io.on("connection", (socket) => {
     });
 
     // ---------- INITIATE CALL ----------
-    socket.on("initiate-call",({roomId})=>{
-        if(!roomId) return;
+    socket.on("initiate-call", ({ roomId }) => {
+        if (!roomId) return;
 
-        if(!rooms[roomId]){
+        if (!rooms[roomId]) {
             rooms[roomId] = [];
         }
         const peers = rooms[roomId];
 
         peers.push(socket.id);
 
-        socket.to(roomId).emit("incoming-call",{from:socket.id});
+        socket.to(roomId).emit("incoming-call", { from: socket.id });
 
-        console.log(`call initaited in room ${roomId} by ${socket.id}`)
-
-    } );
+        console.log(`call initaited in room ${roomId} by ${socket.id}`);
+    });
 
     // ---------- ANSWER CALL ----------
-    socket.on("answer-call", (roomId) =>{
-        if(!roomId) return;
+    socket.on("answer-call", ({ roomId }) => {
+        if (!roomId) return;
 
-        if(!rooms[roomId])return;
+        if (!rooms[roomId]) return;
 
         const peers = rooms[roomId];
 
         socket.emit("existing-peers", peers);
 
-        peers.forEach(peer => {
-            io.to(peer).emit("new-peer",socket.id);
+        peers.forEach((peer) => {
+            io.to(peer).emit("new-peer", socket.id);
         });
 
-        if(!peers.includes(socket.id)){
-
+        if (!peers.includes(socket.id)) {
             peers.push(socket.id);
         }
 
         console.log(`call answered in room ${roomId} by ${socket.id}`);
+    });
 
+    socket.on("end-call", ({ roomId }) => {
+        if (!roomId) return;
+        if (!rooms[roomId]) return;
+        io.to(roomId).emit("call-ended-by-peer", { from: socket.id });
+        rooms[roomId] = rooms[roomId].filter((id) => id != socket.id);
+        console.log(`terminated call from ${socket.id} in room ${roomId}`);
     });
 
     // ---------- SDP OFFERS / ANSWERS ----------
-    socket.on("send-offer", ({offer,to})=>{
-        io.to(to).emit("offer", {from:socket.id, offer})
+    socket.on("send-offer", ({ offer, to }) => {
+        io.to(to).emit("offer", { from: socket.id, offer });
     });
 
-    socket.on("send-answer",({answer,to})=>{
-        io.to(to).emit("answer",{from:socket.id, answer})
+    socket.on("send-answer", ({ answer, to }) => {
+        io.to(to).emit("answer", { from: socket.id, answer });
     });
 
     // ---------- ICE CANDIDATES ----------
-    socket.on("candidate",({candidate,to})=>{
-        io.to(to).emit("ice-candidate-update", {from:socket.id,candidate})
+    socket.on("candidate", ({ candidate, to }) => {
+        io.to(to).emit("ice-candidate-update", {
+            from: socket.id,
+            candidate: candidate,
+        });
     });
 
     // Cleanup on disconnect
     socket.on("disconnect", () => {
         for (const [roomId, peers] of Object.entries(rooms)) {
             rooms[roomId] = peers.filter((p) => p !== socket.id);
+            if (rooms[roomId].length === 0) {
+                delete rooms[roomId];
+            }
         }
         console.log(`${socket.id} disconnected and removed from rooms`);
     });
