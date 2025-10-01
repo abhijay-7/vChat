@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.IO Test</title>
+  <!-- load socket.io client from CDN -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Socket.IO Test</h1>
+  <button id="send-default">Send to Default</button>
+  <button id="send-chat">Send to /chat</button>
+
+  <script>
+    // connect to default namespace `/`
+    const socket = io("http://localhost:3000/");
+
+    socket.on("connect", () => {
+      console.log("✅ Connected to default namespace:", socket.id);
+    });
+
+    socket.on("message", (msg) => {
+      console.log("📩 Default NS message:", msg);
+    });
+
+    // connect to custom namespace `/chat`
+    const chatSocket = io("http://localhost:3000/chat");
+
+    chatSocket.on("connect", () => {
+      console.log("✅ Connected to /chat namespace:", chatSocket.id);
+    });
+
+    chatSocket.on("message", (msg) => {
+      console.log("💬 /chat NS message:", msg);
+    });
+
+    // buttons for quick test
+    document.getElementById("send-default").onclick = () => {
+      socket.emit("message", "Hello from DEFAULT!");
+    };
+
+    document.getElementById("send-chat").onclick = () => {
+      chatSocket.emit("message", "Hello from /CHAT!");
+    };
+  </script>
+</body>
+</html>

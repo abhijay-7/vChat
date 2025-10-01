@@ -1,0 +1,6 @@
+kill process using port :
+sudo kill -9 $(lsof -t -i :3000)
+
+
+
+generating certificates
